@@ -1,3 +1,0 @@
- nucmer -l 100 -prefix out  ChangY_assembly.fasta HiFiY_assembly.fasta
- delta-filter -r -q -l 10000 out.delta > out.rq.delta
- quickmerge -d out.rq.delta -q ChangY_assembly.fasta -r HiFiY_assembly.fasta -hco 8.0 -c 3.0 -l 740929 -ml 5000 -p stricter

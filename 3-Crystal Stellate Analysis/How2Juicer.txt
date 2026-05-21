@@ -1,0 +1,41 @@
+##### JUICER
+
+#make sure to make a directory called 'fastq' and move trimmed HiC reads there, named Something_R1/R2.fastq
+
+#run fastp script on reads, just change length parameter to read length cutoff. 100, if reads are 150, 35 if 50. 
+fastp \
+  -i SRR5206663_1.fastq \
+  -I SRR5206663_2.fastq \
+  -o SRR5206663_1.trimmed.fastq \
+  -O SRR5206663_2.trimmed.fastq \
+  --detect_adapter_for_pe \
+  --length_required 35 \
+  -w 16 \
+  -h SRR5206663_report.html \
+  -j SRR5206663_report.json
+
+# get restriction site positions
+python3 script.py RestrictionEnzymeName wholegenome fastafile
+
+# 1. Create the fasta index (.fai)
+samtools faidx wholegenomeDelgado.fasta
+
+# 2. Extract just the name and length columns for Juicer
+cut -f1,2 wholegenomeDelgado.fasta.fai > Delgado.chrom.sizes
+
+# bwa index
+bwa index wholegenomeDelgado.fasta
+
+# run juicer
+module load GCC/12.2.0 BWA/0.7.17 SAMtools/1.17 Juicer/1.6-Java-11-CUDA-11.7.0-CPU
+juicer=/sw/eb/sw/Juicer/1.6-GCCcore-12.2.0-Java-11-CUDA-11.7.0-CPU/CPU/scripts/juicer.sh
+juicer_dir=/sw/eb/sw/Juicer/1.6-GCCcore-12.2.0-Java-11-CUDA-11.7.0-CPU/CPU
+
+$juicer \
+  -g prefix \
+  -d $(pwd) \
+  -p sizesfile \
+  -y restrictionfile \
+  -z genomeassembly \
+  -t 24 \
+  -D $juicer_dir
